@@ -175,14 +175,18 @@
             font-weight: bold;
             color: #dc2626;
             background: #fafafa;
-            animation: scroll 10s linear infinite;
             overflow: hidden;
             white-space: nowrap;
+            animation: scroll 8s linear infinite;
         }
         
         @keyframes scroll {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+            from {
+                text-indent: 100%;
+            }
+            to {
+                text-indent: -100%;
+            }
         }
         .remarks-field input:focus {
             outline: none;
