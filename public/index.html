@@ -317,6 +317,18 @@
                     currentData = data[0].data;
                     logs = currentData.logs || [];
                     window.currentRowId = data[0].id;
+                    
+                    // FIX: Konvertiere alte thursday-Schlüssel zu monday
+                    MONTH_ORDER.forEach(month => {
+                        if (currentData[month]) {
+                            currentData[month].forEach(week => {
+                                if (week.thursday && !week.monday) {
+                                    week.monday = week.thursday;
+                                    delete week.thursday;
+                                }
+                            });
+                        }
+                    });
                 }
                 
                 renderAll();
@@ -372,10 +384,11 @@
                     
                     const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
                     
+                    const dateDisplay = week.monday || week.thursday || 'Kein Datum';
                     html += `<div class="week-card">
                         <div class="week-header">
                             <div class="week-kw">${week.kw}</div>
-                            <div class="week-date">${week.monday}</div>
+                            <div class="week-date">${dateDisplay}</div>
                         </div>
                         <div class="remarks-field">
                             <input type="text" 
