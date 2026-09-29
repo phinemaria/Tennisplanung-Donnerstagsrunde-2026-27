@@ -206,27 +206,6 @@
             border-color: #fca5a5;
             color: #dc2626;
         }
-        .remarks-field {
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        .remarks-field input {
-            width: 100%;
-            font-size: 11px;
-            padding: 4px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            font-style: italic;
-            color: #666;
-            background: #fafafa;
-        }
-        .remarks-field input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            background: white;
-            color: #333;
-        }
         .game-type {
             background: #f1f5f9;
             padding: 4px;
@@ -450,13 +429,6 @@
                         <div class="week-header">
                             <div class="week-kw">${week.kw}</div>
                             <div class="week-date">${week.thursday}</div>
-                        </div>
-                        <div class="remarks-field">
-                            <input type="text" 
-                                placeholder="Bemerkung..." 
-                                value="${week.remarks || ''}"
-                                maxlength="60"
-                                onchange="saveRemarks('${month}', ${idx}, this.value)">
                         </div>`;
                     
                     Object.keys(PLAYERS).forEach(player => {
@@ -553,25 +525,6 @@
             } else {
                 list.classList.remove('open');
                 btn.textContent = 'Öffnen';
-            }
-        }
-
-        async function saveRemarks(month, weekIdx, remark) {
-            currentData[month][weekIdx].remarks = remark;
-            
-            try {
-                const rowId = window.currentRowId || 1;
-                const { error } = await supabaseClient
-                    .from('tennis_data_thursday')
-                    .update({ 
-                        data: currentData,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', rowId);
-                
-                if (error) console.error('Save error:', error);
-            } catch (error) {
-                console.error('Exception:', error);
             }
         }
 
