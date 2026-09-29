@@ -37,6 +37,55 @@
             margin: 20px 0;
             font-size: 16px;
         }
+        .player-names-section {
+            background: #f0f8ff;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .player-names-section h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+        .player-names-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .player-name-field {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .player-name-field label {
+            font-weight: bold;
+            min-width: 30px;
+        }
+        .player-name-field input {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .player-name-field input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: #fff;
+        }
+        .player-shortcode {
+            flex: 1;
+            padding: 6px;
+            color: #666;
+            font-size: 13px;
+        }
+        .player-name-field.additional input {
+            background: #f0f8ff;
+            border: 2px solid #3b82f6;
+            font-weight: bold;
+        }
         .changelog-section {
             background: #f9f9f9;
             border: 2px solid #e2e8f0;
@@ -77,6 +126,7 @@
         .log-entry:last-child { border-bottom: none; }
         .log-time { color: #666; font-size: 11px; }
         .log-player { color: #3b82f6; font-weight: bold; }
+        .log-change { color: #333; margin-top: 2px; }
         .months-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -116,6 +166,26 @@
             align-items: center;
         }
         .player-name { font-size: 12px; font-weight: bold; }
+        .additional-player-row {
+            grid-template-columns: 1fr;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+        }
+        .additional-player-input {
+            font-size: 12px;
+            padding: 6px;
+            border: 2px solid #3b82f6;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            background: #f0f8ff;
+        }
+        .additional-player-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            background: #fff;
+        }
         .status-btn {
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -135,30 +205,6 @@
             background: #fee2e2;
             border-color: #fca5a5;
             color: #dc2626;
-        }
-        .additional-row {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #ddd;
-            display: grid;
-            grid-template-columns: auto 50px;
-            gap: 5px;
-            align-items: center;
-        }
-        .additional-player-name {
-            font-size: 12px;
-            padding: 4px;
-            border: 1px solid #3b82f6;
-            border-radius: 4px;
-            font-weight: bold;
-            background: #f0f8ff;
-            width: 80px;
-            max-width: 80px;
-        }
-        .additional-player-name:focus {
-            outline: none;
-            border-color: #2563eb;
-            background: #fff;
         }
         .remarks-field {
             margin-bottom: 12px;
@@ -180,9 +226,6 @@
             border-color: #3b82f6;
             background: white;
             color: #333;
-        }
-        .remarks-field input::placeholder {
-            color: #999;
         }
         .game-type {
             background: #f1f5f9;
@@ -231,7 +274,7 @@
         
         let supabaseClient = null;
         let changelogOpen = false;
-        const PLAYERS = { AB: "AB", RP: "RP", TB: "TB", DP: "DP", RB: "RB", DG: "DG" };
+        const PLAYERS = { AB: "AB": "AB", "RP": "RP", "TB": "TB", "DP": "DP", "RB": "RB", "DG": "DG" };
         const MONTH_ORDER = ['Oktober', 'November', 'Dezember', 'Januar', 'Februar', 'März', 'April'];
         let currentData = null;
         let logs = [];
@@ -244,48 +287,50 @@
         function getInitialData() {
             return {
                 logs: [],
+                playerNames: { AB: "", RP: "", DG: "", UW: "", DR: "" },
                 Oktober: [
-                    { kw: "KW 41", monday: "08.10.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 42", monday: "15.10.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 43", monday: "22.10.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 44", monday: "29.10.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
+                    { kw: "KW 41", thursday: "08.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 42", thursday: "15.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 43", thursday: "22.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 44", thursday: "29.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
                 ],
                 November: [
-                    { kw: "KW 45", monday: "05.11.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 46", monday: "12.11.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 47", monday: "19.11.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 48", monday: "26.11.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 49", monday: "30.11.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
+                    { kw: "KW 45", thursday: "05.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 46", thursday: "12.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 47", thursday: "19.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 48", thursday: "26.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 49", thursday: "30.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
                 ],
                 Dezember: [
-                    { kw: "KW 50", monday: "10.12.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 51", monday: "17.12.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 52", monday: "24.12.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 01", monday: "31.12.2026", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
+                    { kw: "KW 50", thursday: "10.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 51", thursday: "17.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 52", thursday: "24.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 01", thursday: "28.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
                 ],
                 Januar: [
-                    { kw: "KW 02", monday: "07.01.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 03", monday: "14.01.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 04", monday: "21.01.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 05", monday: "28.01.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
+                    { kw: "KW 02", thursday: "04.01.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 03", thursday: "11.01.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 04", thursday: "18.01.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 05", thursday: "25.01.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
                 ],
                 Februar: [
-                    { kw: "KW 06", monday: "04.02.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 07", monday: "11.02.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 08", monday: "18.02.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 09", monday: "25.02.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
+                    { kw: "KW 06", thursday: "01.02.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 07", thursday: "08.02.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 08", thursday: "15.02.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 09", thursday: "22.02.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
                 ],
                 März: [
-                    { kw: "KW 10", monday: "04.03.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 11", monday: "11.03.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 12", monday: "18.03.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 13", monday: "25.03.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
+                    { kw: "KW 10", thursday: "01.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 11", thursday: "08.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 12", thursday: "15.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 13", thursday: "22.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 14", thursday: "29.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
                 ],
                 April: [
-                    { kw: "KW 15", monday: "08.04.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 16", monday: "15.04.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 17", monday: "22.04.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
-                    { kw: "KW 18", monday: "29.04.2027", availabilities: { AB: "❌", RP: "❌", TB: "❌", DP: "❌", RB: "❌", DG: "❌" }, additionalPlayer: "", additionalPlayerStatus: "❌", remarks: "" },
+                    { kw: "KW 15", thursday: "05.04.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 16", thursday: "12.04.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 17", thursday: "19.04.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                    { kw: "KW 18", thursday: "26.04.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
                 ]
             };
         }
@@ -295,6 +340,7 @@
                 document.getElementById('syncStatus').textContent = 'Lädt...';
                 await initSupabase();
                 
+                // Lade Daten
                 const { data, error } = await supabaseClient
                     .from('tennis_data_thursday')
                     .select('*')
@@ -317,6 +363,8 @@
                     currentData = data[0].data;
                     logs = currentData.logs || [];
                     window.currentRowId = data[0].id;
+                    
+                    console.log('Loaded logs:', logs);
                 }
                 
                 renderAll();
@@ -334,6 +382,32 @@
             renderMonths();
         }
 
+        function renderPlayerNames() {
+            const grid = document.getElementById('playerNamesGrid');
+            if (!grid) return;
+            
+            let html = '';
+            Object.keys(PLAYERS).forEach(player => {
+                const name = currentData.playerNames?.[player] || '';
+                html += `<div class="player-name-field">
+                    <label>${player}:</label>
+                    <span class="player-shortcode">${player}</span>
+                </div>`;
+            });
+            
+            // Zusätzliches Spieler-Feld
+            const additionalName = currentData.additionalPlayerName || '';
+            html += `<div class="player-name-field additional">
+                <label>+:</label>
+                <input type="text" 
+                    placeholder="Zusätzlicher Spieler..." 
+                    value="${additionalName}"
+                    onchange="saveAdditionalPlayer(this.value)">
+            </div>`;
+            
+            grid.innerHTML = html;
+        }
+
         function renderLogs() {
             const html = logs.map(log => {
                 const date = new Date(log.timestamp);
@@ -341,10 +415,15 @@
                     day: '2-digit', month: '2-digit', year: 'numeric',
                     hour: '2-digit', minute: '2-digit', second: '2-digit'
                 });
-                return `<div class="log-entry">
-                    <div class="log-time">${time}</div>
-                    <div><span class="log-player">${log.player}</span> ${log.month} ${log.week}: ${log.oldStatus} → ${log.newStatus}</div>
-                </div>`;
+                return `
+                    <div class="log-entry">
+                        <div class="log-time">${time}</div>
+                        <div class="log-change">
+                            <span class="log-player">${log.player}</span>
+                            ${log.month} ${log.week}: ${log.oldStatus} → ${log.newStatus}
+                        </div>
+                    </div>
+                `;
             }).join('');
             
             document.getElementById('changelog').innerHTML = html || '<p style="color:#999;">Noch keine Änderungen</p>';
@@ -354,6 +433,7 @@
             if (!currentData) return;
             let html = '';
             
+            // Verwende die explizite Reihenfolge!
             MONTH_ORDER.forEach(month => {
                 const weeks = currentData[month];
                 if (!weeks) return;
@@ -363,19 +443,13 @@
                     <div class="weeks-grid">`;
                 
                 weeks.forEach((week, idx) => {
-                    let confirmCount = Object.values(week.availabilities).filter(v => v === '🟡').length;
-                    
-                    // Zusätzlicher Spieler auch zählen
-                    if (week.additionalPlayerStatus === '🟡') {
-                        confirmCount++;
-                    }
-                    
+                    const confirmCount = Object.values(week.availabilities).filter(v => v === '🟡').length;
                     const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
                     
                     html += `<div class="week-card">
                         <div class="week-header">
                             <div class="week-kw">${week.kw}</div>
-                            <div class="week-date">${week.monday}</div>
+                            <div class="week-date">${week.thursday}</div>
                         </div>
                         <div class="remarks-field">
                             <input type="text" 
@@ -397,19 +471,13 @@
                         </div>`;
                     });
                     
-                    const additionalName = week.additionalPlayer || '';
-                    const additionalStatus = week.additionalPlayerStatus || '❌';
-                    const additionalIsConfirm = additionalStatus === '🟡';
-                    html += `<div class="player-row additional-row">
-                        <input type="text" class="additional-player-name"
-                            placeholder="+" 
-                            maxlength="10"
-                            value="${additionalName}"
+                    // Zusätzlicher Spieler pro Woche
+                    const additionalPlayer = week.additionalPlayer || '';
+                    html += `<div class="player-row additional-player-row">
+                        <input type="text" class="additional-player-input"
+                            placeholder="Name..." 
+                            value="${additionalPlayer}"
                             onchange="saveAdditionalPlayer('${month}', ${idx}, this.value)">
-                        <button class="status-btn ${additionalIsConfirm ? 'confirm' : 'unavailable'}" 
-                            onclick="toggleAdditional('${month}', ${idx})">
-                            ${additionalStatus}
-                        </button>
                     </div>`;
                     
                     html += `<div class="game-type">${gameType}</div></div>`;
@@ -419,6 +487,59 @@
             });
             
             document.getElementById('monthsContainer').innerHTML = html;
+        }
+
+        async function saveAdditionalPlayer(name) {
+            if (!currentData.additionalPlayerName) {
+                currentData.additionalPlayerName = '';
+            }
+            currentData.additionalPlayerName = name;
+            
+            try {
+                const rowId = window.currentRowId || 1;
+                const { error } = await supabaseClient
+                    .from('tennis_data_thursday')
+                    .update({ 
+                        data: currentData,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', rowId);
+                
+                if (error) {
+                    console.error('Save error:', error);
+                } else {
+                    console.log('Additional player saved');
+                    renderAll();
+                }
+            } catch (error) {
+                console.error('Exception:', error);
+            }
+        }
+
+        async function savePlayerName(player, name) {
+            if (!currentData.playerNames) {
+                currentData.playerNames = {};
+            }
+            currentData.playerNames[player] = name;
+            
+            try {
+                const rowId = window.currentRowId || 1;
+                const { error } = await supabaseClient
+                    .from('tennis_data_thursday')
+                    .update({ 
+                        data: currentData,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', rowId);
+                
+                if (error) {
+                    console.error('Save error:', error);
+                } else {
+                    console.log('Player name saved');
+                }
+            } catch (error) {
+                console.error('Exception:', error);
+            }
         }
 
         function toggleChangelog() {
@@ -432,44 +553,6 @@
             } else {
                 list.classList.remove('open');
                 btn.textContent = 'Öffnen';
-            }
-        }
-
-        async function toggle(month, weekIdx, player) {
-            const states = ['❌', '🟡'];
-            const current = currentData[month][weekIdx].availabilities[player];
-            const nextIdx = (states.indexOf(current) + 1) % states.length;
-            const newStatus = states[nextIdx];
-            
-            logs.unshift({
-                timestamp: new Date().toISOString(),
-                player: player,
-                month: month,
-                week: currentData[month][weekIdx].kw,
-                oldStatus: current,
-                newStatus: newStatus
-            });
-            
-            currentData.logs = logs;
-            currentData[month][weekIdx].availabilities[player] = newStatus;
-            renderAll();
-            
-            try {
-                const rowId = window.currentRowId || 1;
-                const { error } = await supabaseClient
-                    .from('tennis_data_thursday')
-                    .update({ 
-                        data: currentData,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', rowId);
-                
-                if (error) {
-                    console.error('Error:', error);
-                    document.getElementById('syncStatus').textContent = 'FEHLER: ' + error.message;
-                }
-            } catch (error) {
-                console.error('Exception:', error);
             }
         }
 
@@ -492,62 +575,36 @@
             }
         }
 
-        async function saveAdditionalPlayer(month, weekIdx, name) {
-            const oldName = currentData[month][weekIdx].additionalPlayer || '';
-            currentData[month][weekIdx].additionalPlayer = name;
+        async function toggle(month, weekIdx, player) {
+            const states = ['❌', '🟡'];
+            const current = currentData[month][weekIdx].availabilities[player];
+            const nextIdx = (states.indexOf(current) + 1) % states.length;
+            const newStatus = states[nextIdx];
             
-            // Logging nur wenn sich etwas geändert hat
-            if (oldName !== name) {
-                logs.unshift({
-                    timestamp: new Date().toISOString(),
-                    player: name || '(gelöscht)',
-                    month: month,
-                    week: currentData[month][weekIdx].kw,
-                    oldStatus: oldName || '−',
-                    newStatus: name || '−'
-                });
-                currentData.logs = logs;
-            }
-            
-            renderAll();
-            
-            try {
-                const rowId = window.currentRowId || 1;
-                const { error } = await supabaseClient
-                    .from('tennis_data_thursday')
-                    .update({ 
-                        data: currentData,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', rowId);
-                
-                if (error) console.error('Save error:', error);
-            } catch (error) {
-                console.error('Exception:', error);
-            }
-        }
-
-        async function toggleAdditional(month, weekIdx) {
-            const additionalName = currentData[month][weekIdx].additionalPlayer || '(ohne Name)';
-            const status = currentData[month][weekIdx].additionalPlayerStatus || '❌';
-            const newStatus = status === '❌' ? '🟡' : '❌';
-            
-            logs.unshift({
+            const logEntry = {
                 timestamp: new Date().toISOString(),
-                player: additionalName,
+                player: player,
                 month: month,
                 week: currentData[month][weekIdx].kw,
-                oldStatus: status,
+                oldStatus: current,
                 newStatus: newStatus
-            });
+            };
             
+            console.log('Toggle clicked:', logEntry);
+            
+            logs.unshift(logEntry);
             currentData.logs = logs;
-            currentData[month][weekIdx].additionalPlayerStatus = newStatus;
+            currentData[month][weekIdx].availabilities[player] = newStatus;
             renderAll();
             
             try {
+                document.getElementById('syncStatus').textContent = 'Speichert...';
+                
                 const rowId = window.currentRowId || 1;
-                const { error } = await supabaseClient
+                console.log('Saving to Supabase, rowId:', rowId);
+                
+                // Speichere Daten (inkl. Logs)
+                const { error: updateError } = await supabaseClient
                     .from('tennis_data_thursday')
                     .update({ 
                         data: currentData,
@@ -555,9 +612,18 @@
                     })
                     .eq('id', rowId);
                 
-                if (error) console.error('Toggle error:', error);
+                console.log('Update error:', updateError);
+                
+                if (updateError) {
+                    console.error('Save error:', updateError);
+                    document.getElementById('syncStatus').textContent = 'FEHLER: ' + updateError.message;
+                } else {
+                    console.log('Saved successfully');
+                    document.getElementById('syncStatus').textContent = 'Gespeichert ✓';
+                }
             } catch (error) {
                 console.error('Exception:', error);
+                document.getElementById('syncStatus').textContent = 'Exception: ' + error.message;
             }
         }
 
