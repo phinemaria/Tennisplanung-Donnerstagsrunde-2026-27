@@ -592,11 +592,17 @@
             });
             
             if (nextWeek) {
-                let confirmCount = Object.values(nextWeek.availabilities).filter(v => v === '🟡').length;
-                if (nextWeek.additionalPlayerStatus === '🟡') confirmCount++;
+                const confirmedPlayers = Object.entries(nextWeek.availabilities)
+                    .filter(([_, status]) => status === '🟡')
+                    .map(([name, _]) => name);
+                if (nextWeek.additionalPlayerStatus === '🟡' && nextWeek.additionalPlayer) {
+                    confirmedPlayers.push(nextWeek.additionalPlayer);
+                }
+                const confirmCount = confirmedPlayers.length;
                 const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
+                const playerList = confirmedPlayers.length > 0 ? ` (${confirmedPlayers.join(', ')})` : '';
                 document.getElementById('nextWeekText').innerHTML = 
-                    `📅 Nächste Woche: <strong>${nextWeek.monday}</strong> (${nextWeek.kw}) • ${confirmCount}/6+ bestätigt → <strong>${gameType}</strong>`;
+                    `📅 Nächste Woche: <strong>${nextWeek.monday}</strong> (${nextWeek.kw}) • ${confirmCount}/6+ bestätigt${playerList} → <strong>${gameType}</strong>`;
             } else {
                 document.getElementById('nextWeekText').innerHTML = '✅ Saison beendet!';
             }
@@ -624,9 +630,15 @@
                 return;
             }
             
-            let confirmCount = Object.values(nextWeek.availabilities).filter(v => v === '🟡').length;
-            if (nextWeek.additionalPlayerStatus === '🟡') confirmCount++;
+            const confirmedPlayers = Object.entries(nextWeek.availabilities)
+                .filter(([_, status]) => status === '🟡')
+                .map(([name, _]) => name);
+            if (nextWeek.additionalPlayerStatus === '🟡' && nextWeek.additionalPlayer) {
+                confirmedPlayers.push(nextWeek.additionalPlayer);
+            }
+            const confirmCount = confirmedPlayers.length;
             const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
+            const playerList = confirmedPlayers.length > 0 ? `, ${confirmedPlayers.join(', ')}` : '';
             
             const playerRows = Object.entries(nextWeek.availabilities)
                 .map(([name, status]) => `<tr>
@@ -655,7 +667,7 @@
                     <div class="info">
                         <div class="info-line"><strong>Woche:</strong> ${nextWeek.kw}</div>
                         <div class="info-line"><strong>Datum:</strong> ${nextWeek.monday}</div>
-                        <div class="info-line"><strong>Bestätigt:</strong> ${confirmCount} Spieler</div>
+                        <div class="info-line"><strong>Bestätigt:</strong> ${confirmCount} Spieler${playerList}</div>
                         <div class="info-line"><strong>Spieltyp:</strong> <strong>${gameType}</strong></div>
                         ${nextWeek.remarks ? `<div class="info-line"><strong>Bemerkung:</strong> ${nextWeek.remarks}</div>` : ''}
                     </div>
