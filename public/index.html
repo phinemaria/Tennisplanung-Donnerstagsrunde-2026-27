@@ -89,6 +89,19 @@
         }
         .stat-name { font-weight: bold; color: #0369a1; }
         .stat-ratio { color: #666; font-size: 10px; margin-top: 2px; }
+        .stat-bar-container {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .stat-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
         
         /* Mobile Optimierung */
         @media (max-width: 768px) {
@@ -565,9 +578,17 @@
                 .sort((a, b) => (b[1].confirmed / b[1].total || 0) - (a[1].confirmed / a[1].total || 0))
                 .map(([name, data]) => {
                     const percent = data.total > 0 ? Math.round((data.confirmed / data.total) * 100) : 0;
+                    // Farbwahl basierend auf Quote
+                    let barColor = '#10b981'; // Grün >= 66%
+                    if (percent < 33) barColor = '#ef4444'; // Rot < 33%
+                    else if (percent < 66) barColor = '#eab308'; // Gelb 33-66%
+                    
                     return `<div class="stat-item">
                         <div class="stat-name">${name}</div>
                         <div class="stat-ratio">${data.confirmed}/${data.total} (${percent}%)</div>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" style="width: ${percent}%; background-color: ${barColor};"></div>
+                        </div>
                     </div>`;
                 }).join('');
             
