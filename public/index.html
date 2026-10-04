@@ -496,7 +496,21 @@
                     const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
                     
                     const dateDisplay = week.monday || week.thursday || 'Kein Datum';
-                    html += `<div class="week-card">
+                    
+                    // Woche-Status prüfen (Datum parsing: DD.MM.YYYY → YYYY-MM-DD)
+                    const dateObj = new Date(dateDisplay.split('.').reverse().join('-'));
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const daysAgo = Math.floor((today - dateObj) / (1000 * 60 * 60 * 24));
+                    
+                    let weekClasses = 'week-card';
+                    if (daysAgo > 28) {
+                        weekClasses += ' hidden'; // älter als 4 Wochen: ausblenden
+                    } else if (daysAgo >= 0) {
+                        weekClasses += ' expired'; // 0-28 Tage alt: grau
+                    }
+                    
+                    html += `<div class="${weekClasses}">
                         <div class="week-header">
                             <div class="week-kw">${week.kw}</div>
                             <div class="week-date">${dateDisplay}</div>
