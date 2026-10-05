@@ -340,7 +340,7 @@
             <div id="nextWeekBox" class="next-week-box">
                 <div class="next-week-content">
                     <span id="nextWeekText">Lädt...</span>
-                    <button id="printBtn" class="print-btn" onclick="printNextWeek()" title="Nächste Woche drucken/PDF">🖨️</button>
+                    <button id="printBtn" class="print-btn" onclick="printNextWeek()" title="Nächstes Match drucken/PDF">🖨️</button>
                 </div>
             </div>
             
@@ -578,7 +578,6 @@
                 .sort((a, b) => (b[1].confirmed / b[1].total || 0) - (a[1].confirmed / a[1].total || 0))
                 .map(([name, data]) => {
                     const percent = data.total > 0 ? Math.round((data.confirmed / data.total) * 100) : 0;
-                    // Farbwahl basierend auf Quote
                     let barColor = '#10b981'; // Grün >= 66%
                     if (percent < 33) barColor = '#ef4444'; // Rot < 33%
                     else if (percent < 66) barColor = '#eab308'; // Gelb 33-66%
@@ -623,7 +622,7 @@
                 const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
                 const playerList = confirmedPlayers.length > 0 ? ` (${confirmedPlayers.join(', ')})` : '';
                 document.getElementById('nextWeekText').innerHTML = 
-                    `📅 Nächste Woche: <strong>${nextWeek.monday}</strong> (${nextWeek.kw}) • ${confirmCount}/6+ bestätigt${playerList} → <strong>${gameType}</strong>`;
+                    `📅 Nächstes Match: <strong>${nextWeek.monday}</strong> (${nextWeek.kw}) • ${confirmCount}/6+ bestätigt${playerList} → <strong>${gameType}</strong>`;
             } else {
                 document.getElementById('nextWeekText').innerHTML = '✅ Saison beendet!';
             }
