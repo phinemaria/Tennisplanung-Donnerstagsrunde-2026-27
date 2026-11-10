@@ -598,7 +598,17 @@
                         }
                     });
                 });
-                if (datesFixed > 0) {
+                // FIX: KW 49 (Donnerstag 03.12.2026) fehlte in den gespeicherten Daten -> einfügen
+                let weekAdded = false;
+                const hasKw49 = MONTH_ORDER.some(m => (currentData[m] || []).some(w => w.kw === 'KW 49'));
+                if (!hasKw49 && currentData['Dezember']) {
+                    const av = {};
+                    Object.keys(PLAYERS).forEach(pl => av[pl] = '❌');
+                    currentData['Dezember'].unshift({ kw: 'KW 49', monday: '03.12.2026', availabilities: av, additionalPlayer: '', additionalPlayerStatus: '❌', remarks: '' });
+                    weekAdded = true;
+                }
+
+                if (datesFixed > 0 || weekAdded) {
                     await sbSave(window.currentRowId, currentData);
                 }
 
